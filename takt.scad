@@ -10,6 +10,12 @@ hole_offset=12.5;
 grid_n=4;
 grid_h=0.5;
 
+bottom_lid=false;
+bottom_lid_style="flat"; // [flat, grid]
+top_lid=false;
+top_lid_style="flat"; // [flat, grid]
+sides=true;
+
 prep_hole_d=8;
 prep_hole_geo="square"; // [square, circle]
 
@@ -87,36 +93,49 @@ module gridHole() {
 module screwHole() {
     // 7.95, prephole
     // 5.45 stopper
-        translate([0,1,0])
-    
-        translate([0,0.5+0.01,0]) {
+        prep_depth = 1;
+        translate([0,wall_thickness-prep_depth,0])
+        translate([0,prep_depth/2+0.01,0]) {
             if (prep_hole_geo == "square") {
-             cube([prep_hole_d, 1, prep_hole_d], center=true);
+                cube([prep_hole_d, prep_depth, prep_hole_d], center=true);
             } else {
                 rotate([90, 0, 0])
-                circle(r=prep_hole_d/2, h=1);
+                cylinder(r=prep_hole_d/2, h=1, center=true);
             }
         }
         
-        translate([0, wall_thickness+0.1,0])
+        hole_depth=wall_thickness+1;
+        translate([0, hole_depth/2+wall_thickness/2,0])
         rotate([90,0,0])
-        cylinder(r=5.45/2, h=5);
+        cylinder(r=5.45/2, h=hole_depth);
 }
 
 module box(with_grid=false, diagonal_cut=false) {
 center_pt=box_size/2;
-translate([0, box_size]) 
-rotate_about_pt(180,0,[center_pt,0,center_pt])
-    side(with_grid=with_grid, diagonal_cut=diagonal_cut);
-side(with_grid=with_grid, diagonal_cut=diagonal_cut);
+    if (sides) {
+        translate([0, box_size]) 
+        rotate_about_pt(180,0,[center_pt,0,center_pt])
+        side(with_grid=with_grid, diagonal_cut=diagonal_cut);
+        side(with_grid=with_grid, diagonal_cut=diagonal_cut);
 
-rotate([0,0,90])
-rotate_about_pt(180,0,[center_pt,0,center_pt])
-    side(diagonal_cut=diagonal_cut);
+        rotate([0,0,90])
+        rotate_about_pt(180,0,[center_pt,0,center_pt])
+        side(diagonal_cut=diagonal_cut);
 
-translate([box_size, 0])
-rotate([0,0,90])
-    side(diagonal_cut=diagonal_cut);
+        translate([box_size, 0])
+        rotate([0,0,90])
+        side(diagonal_cut=diagonal_cut);
+    }
+    if (bottom_lid) {
+        translate([0, box_size])
+        rotate([90])
+        side(with_grid=bottom_lid_style == "grid", diagonal_cut=diagonal_cut);
+    }
+    if (top_lid) {
+        translate([0, 0, box_size])
+        rotate([-90])
+        side(with_grid=top_lid_style == "grid", diagonal_cut=diagonal_cut);
+    }
 }
 //    side(diagonal_cut=diagonal_cut);
 box(with_grid=with_grid, diagonal_cut=diagonal_cut);
