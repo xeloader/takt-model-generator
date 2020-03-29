@@ -1,0 +1,9 @@
+{
+    "parameterSets": {
+        "design default values": {
+            "box_size": "50",
+            "wall_thickness": "2"
+        }
+    },
+    "fileFormatVersion": "1"
+}
