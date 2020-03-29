@@ -1,8 +1,16 @@
 {
     "parameterSets": {
-        "design default values": {
-            "box_size": "50",
-            "wall_thickness": "2"
+        "47-box": {
+            "$fn": "48",
+            "box_size": "47",
+            "error_on_not_interconnectable": "false",
+            "grid_h": "0.5",
+            "grid_n": "3",
+            "hole_offset": "12.5",
+            "prep_hole_d": "8",
+            "prep_hole_geo": "square",
+            "wall_thickness": "2",
+            "with_grid": "true"
         }
     },
     "fileFormatVersion": "1"
