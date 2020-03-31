@@ -1,25 +1,32 @@
-error_on_not_interconnectable=false; // [true, false]
-$fn = 48;
-
-diagonal_cut=true;
-
-wall_thickness=2;
 box_size=99; // [10:0.5:250]
-hole_offset=12.5;
+wall_thickness=2;
+with_grid=true; // [true, false]
 
+/* [Parts] */
+sides=true;
+bottom_lid=false;
+bottom_lid_style="flat"; // [flat, grid, circle]
+top_lid=false;
+top_lid_style="flat"; // [flat, grid, circle]
+
+/* [Type-Grid] */
 grid_n=4;
 grid_h=0.5;
 
-bottom_lid=false;
-bottom_lid_style="flat"; // [flat, grid]
-top_lid=false;
-top_lid_style="flat"; // [flat, grid]
-sides=true;
+/* [Type-Circle] */
+film_thickness = 0.5; // [-1:0.5:100]
 
+/* [Screws] */
+hole_offset=12.5;
 prep_hole_d=8;
+
+/* [Modularity] */
+diagonal_cut=true;
 prep_hole_geo="square"; // [square, circle]
 
-with_grid=true; // [true, false]
+/* [SCAD related] */
+error_on_not_interconnectable=false; // [true, false]
+$fn = 48;
 
 if (error_on_not_interconnectable) {
 assert(box_size/2 > 2*hole_offset, "Settings yields non interconnectable boxes"); 
@@ -39,7 +46,7 @@ module cut_line(diag_cut_len) {
     cube([diag_cut_len, cut_size, cut_size], center=true);
 }
 
-module side(with_grid=false, diagonal_cut=false){
+module side(with_grid=false, diagonal_cut=false, with_circle=false){
     max_pt = box_size-hole_offset;
     min_pt = hole_offset;
     difference() {
@@ -61,6 +68,13 @@ module side(with_grid=false, diagonal_cut=false){
             }
         }
         
+    }
+    if (with_circle) {
+        center_pt = box_size / 2;
+        circle_r = (box_size*0.91)/2;
+        rotate([90, 0])
+        translate([center_pt, center_pt, -wall_thickness-0.01])
+        cylinder(r=circle_r, h=wall_thickness-film_thickness);
     }
     if (with_grid) {
         grid_size = box_size-2*hole_offset;
@@ -129,12 +143,20 @@ center_pt=box_size/2;
     if (bottom_lid) {
         translate([0, box_size])
         rotate([90])
-        side(with_grid=bottom_lid_style == "grid", diagonal_cut=diagonal_cut);
+        side(
+            with_grid=bottom_lid_style == "grid", 
+            with_circle=bottom_lid_style=="circle",
+            diagonal_cut=diagonal_cut
+        );
     }
     if (top_lid) {
         translate([0, 0, box_size])
         rotate([-90])
-        side(with_grid=top_lid_style == "grid", diagonal_cut=diagonal_cut);
+        side(
+            with_grid=top_lid_style == "grid", 
+            with_circle=top_lid_style=="circle",
+            diagonal_cut=diagonal_cut
+        );
     }
 }
 //    side(diagonal_cut=diagonal_cut);
