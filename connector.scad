@@ -1,4 +1,4 @@
-length = 35;
+length = 41;
 height = 4;
 width = 10;
 
@@ -23,42 +23,42 @@ module hinge () {
     radius=height/2;
     block_width=2.50;
     union() {
-        width=3;
-        translate([0, 1.5]) {
+        hinge_width=width*0.3;
+        translate([0, hinge_width/2]) {
             translate([-block_width/2, 0])
             rotate([0,0,90])
-            cube([width, block_width, height], center=true);
-            rotate([90]) cylinder(r=radius, h=width, center=true);
+            cube([hinge_width, block_width, height], center=true);
+            rotate([90]) cylinder(r=radius, h=hinge_width, center=true);
         }
-        translate([0,10-1.5]) {
+        translate([0,width-hinge_width/2]) {
             translate([-block_width/2, 0])
             rotate([0,0,90])
-            cube([width, block_width, height], center=true);
-            rotate([90]) cylinder(r=radius, h=width, center=true);
+            cube([hinge_width, block_width, height], center=true);
+            rotate([90]) cylinder(r=radius, h=hinge_width, center=true);
         }
-        translate([0, 5])
+        translate([0, width/2])
         rotate([90])
-        cylinder(r=1.25, h=10, center=true);
+        cylinder(r=1.25, h=width, center=true);
     }
-    translate([0,5]) {
-        width=3.3;
+    translate([0,width/2]) {
+        hinge_width=width * 1/3;
         rotate([0, 180]) {
             difference() {
                 union () {
                     translate([-block_width/2, 0])
                     rotate([0,0,90])
-                    cube([width, block_width, height], center=true);
-                    rotate([90]) cylinder(r=radius, h=width, center=true);
+                    cube([hinge_width, block_width, height], center=true);
+                    rotate([90]) cylinder(r=radius, h=hinge_width, center=true);
                 }
-                rotate([90]) cylinder(r=radius-0.5, h=width+0.01, center=true);
+                rotate([90]) cylinder(r=radius-0.5, h=hinge_width+0.01, center=true);
             }
         }
     }
 }
 
 module connector (with_hinge=false) {
+    middle_length = length - width;
     difference() {
-        middle_length = length - width;
         union() {
             cube([middle_length, width, height]);
 
@@ -71,8 +71,15 @@ module connector (with_hinge=false) {
         }
         translate([0, width/2]) screw_hole();
         translate([middle_length, width/2]) screw_hole();
+        if (with_hinge) {
+            translate([middle_length/2, width/2, height/2])
+            cube([5-0.1, width+0.1, height+0.1], center=true);
+        }
+    }
+    if (with_hinge) {
+        translate([middle_length/2, 0, height/2])
+        hinge();
     }
 }
 
-hinge();
-// connector(with_hinge=hinge);
+connector(with_hinge=hinge);
