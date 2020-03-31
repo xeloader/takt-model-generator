@@ -1,7 +1,7 @@
 error_on_not_interconnectable=false; // [true, false]
 $fn = 48;
 
-diagonal_cut=false;
+diagonal_cut=true;
 
 wall_thickness=2;
 box_size=99; // [10:0.5:250]
@@ -19,7 +19,7 @@ sides=true;
 prep_hole_d=8;
 prep_hole_geo="square"; // [square, circle]
 
-with_grid=false; // [true, false]
+with_grid=true; // [true, false]
 
 if (error_on_not_interconnectable) {
 assert(box_size/2 > 2*hole_offset, "Settings yields non interconnectable boxes"); 
