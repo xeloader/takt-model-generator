@@ -5,13 +5,20 @@ with_grid=true; // [true, false]
 /* [Parts] */
 sides=true;
 bottom_lid=false;
-bottom_lid_style="flat"; // [flat, grid, circle]
+bottom_lid_style="flat"; // [flat, grid, circle, fence]
 top_lid=false;
-top_lid_style="flat"; // [flat, grid, circle]
+top_lid_style="flat"; // [flat, grid, circle, fence]
 
 /* [Type-Grid] */
 grid_n=4;
 grid_h=0.5;
+
+/* [Type-Fence] */
+fence_height=20;
+fence_n=3;
+fence_thickness=2;
+fence_frame_thickness=2;
+
 
 /* [Type-Circle] */
 film_thickness = 0.5; // [-1:0.5:100]
@@ -49,11 +56,13 @@ module cut_line(diag_cut_len) {
     cube([diag_cut_len, cut_size, cut_size], center=true);
 }
 
-module side(with_grid=false, diagonal_cut=false, with_circle=false){
+module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false){
     max_pt = box_size-hole_offset;
     min_pt = hole_offset;
     center_pt = box_size / 2;
     circle_r = (box_size*0.91)/2;
+    difference() {
+    union() {
     difference() {
     difference() {
         cube([box_size, wall_thickness, box_size]);
@@ -63,26 +72,30 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false){
             translate([min_pt, 0, min_pt]) screwHole();
             translate([max_pt, 0, max_pt]) screwHole();
         }
-        if (diagonal_cut) {
-            translate([0, wall_thickness]) {
-                diag_cut_len=box_size+0.01;
-                cut_line(diag_cut_len);
-                translate([0,0,box_size]) cut_line(diag_cut_len);
-                rotate([0,-90]) cut_line(diag_cut_len);
-                translate([box_size,0]) rotate([0,-90]) cut_line(diag_cut_len);
-            }
-        }
-        
     }
     if (with_circle) {
         rotate([90, 0])
         translate([center_pt, center_pt, -wall_thickness-0.01])
         cylinder(r=circle_r, h=wall_thickness-film_thickness);
     }
+    if (with_fence) {
+        fence_size = box_size-2*2*hole_offset;
+        offset = hole_offset*2;
+        translate([0,0,offset]){
+            translate([fence_frame_thickness,-0.01,0])
+            cube([box_size-fence_frame_thickness*2, wall_thickness+1, fence_size], center=false);
+            
+            translate([fence_frame_thickness,-0.01,0])
+            rotate([0,90]){
+                translate([-3*offset+fence_frame_thickness+1, 0, offset-fence_frame_thickness])
+            cube([box_size-fence_frame_thickness*2, wall_thickness+1, fence_size], center=false);
+            }
+               
+        }
+    }
     if (with_grid) {
         grid_size = box_size-2*hole_offset;
         grid_step = grid_size / (grid_n - 1);
-        echo (grid_step, hole_offset, grid_size);
         translate([hole_offset, 0, hole_offset]){
         grid_max_i = grid_n-1;
         for(i=[0:grid_max_i]) {
@@ -100,8 +113,45 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false){
     }
     }
 }
+    if (with_fence) {
+        max_i = fence_n - 1;
+        fence_size = box_size-2*2*hole_offset;
+        offset = (hole_offset*2);
+        step_size = fence_size / (fence_n - 1);
+        translate([box_size/2, -fence_height/2+fence_thickness, offset]) {
+        for (i=[0:max_i]) {
+            translate([0,0,step_size*i])
+            cube([box_size, fence_height, fence_thickness], center=true);
+        }
+        }
+        translate([offset, -fence_height/2+fence_thickness, box_size/2]) 
+        rotate([0, 90]) {
+            for (i=[0:max_i]) {
+                translate([0,0,step_size*i])
+                cube([box_size, fence_height, fence_thickness], center=true);
+            }
+        }
+        translate([offset, fence_thickness])
+        rotate([90])
+        cube([fence_size, fence_frame_thickness, fence_height]);
+
+        translate([offset, fence_thickness, box_size-fence_frame_thickness])
+        rotate([90])
+        cube([fence_size, fence_frame_thickness, fence_height]);
+        
+        translate([0, fence_thickness, fence_size+offset])
+        rotate([90, 90])
+        cube([fence_size, fence_frame_thickness, fence_height]);
+
+        translate([box_size-fence_frame_thickness, fence_thickness, fence_size+offset])
+        rotate([90, 90])
+        cube([fence_size, fence_frame_thickness, fence_height]);
+
+        
+    
+    }
     if (with_circle && frame) {
-        translate([0, wall_thickness]) {
+        translate([0, wall_thickness])
             union() {
             difference() {
                 rotate([90, 0])
@@ -113,9 +163,19 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false){
                 cylinder(r=circle_r-frame_thickness, h=frame_height+0.02);
             }
         }
+    }
+}
+
+    if (diagonal_cut) {
+            translate([0, wall_thickness]) {
+                diag_cut_len=box_size+0.01;
+                cut_line(diag_cut_len);
+                translate([0,0,box_size]) cut_line(diag_cut_len);
+                rotate([0,-90]) cut_line(diag_cut_len);
+                translate([box_size,0]) rotate([0,-90]) cut_line(diag_cut_len);
+            }
         }
     }
-
 }
 
 module gridHole() {
@@ -142,7 +202,7 @@ module screwHole() {
         cylinder(r=5.45/2, h=hole_depth);
 }
 
-module box(with_grid=false, diagonal_cut=false) {
+module box(with_grid=false, diagonal_cut=false, with_fence=false) {
 center_pt=box_size/2;
     if (sides) {
         translate([0, box_size]) 
@@ -164,6 +224,7 @@ center_pt=box_size/2;
         side(
             with_grid=bottom_lid_style == "grid", 
             with_circle=bottom_lid_style=="circle",
+            with_fence=bottom_lid_style=="fence",
             diagonal_cut=diagonal_cut
         );
     }
@@ -173,9 +234,10 @@ center_pt=box_size/2;
         side(
             with_grid=top_lid_style == "grid", 
             with_circle=top_lid_style=="circle",
+            with_fence=bottom_lid_style=="fence",
             diagonal_cut=diagonal_cut
         );
     }
 }
-//    side(diagonal_cut=diagonal_cut);
+//side(with_fence=true);
 box(with_grid=with_grid, diagonal_cut=diagonal_cut);
