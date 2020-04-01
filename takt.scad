@@ -15,6 +15,9 @@ grid_h=0.5;
 
 /* [Type-Circle] */
 film_thickness = 0.5; // [-1:0.5:100]
+frame = false;
+frame_height = 70;
+frame_thickness = 2;
 
 /* [Screws] */
 hole_offset=12.5;
@@ -49,6 +52,8 @@ module cut_line(diag_cut_len) {
 module side(with_grid=false, diagonal_cut=false, with_circle=false){
     max_pt = box_size-hole_offset;
     min_pt = hole_offset;
+    center_pt = box_size / 2;
+    circle_r = (box_size*0.91)/2;
     difference() {
     difference() {
         cube([box_size, wall_thickness, box_size]);
@@ -70,8 +75,6 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false){
         
     }
     if (with_circle) {
-        center_pt = box_size / 2;
-        circle_r = (box_size*0.91)/2;
         rotate([90, 0])
         translate([center_pt, center_pt, -wall_thickness-0.01])
         cylinder(r=circle_r, h=wall_thickness-film_thickness);
@@ -97,6 +100,21 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false){
     }
     }
 }
+    if (with_circle && frame) {
+        translate([0, wall_thickness]) {
+            union() {
+            difference() {
+                rotate([90, 0])
+                translate([center_pt, center_pt])
+                cylinder(r=circle_r, h=frame_height);
+                
+                rotate([90, 0])
+                translate([center_pt, center_pt, -0.01])
+                cylinder(r=circle_r-frame_thickness, h=frame_height+0.02);
+            }
+        }
+        }
+    }
 
 }
 
