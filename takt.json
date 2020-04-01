@@ -11,6 +11,32 @@
             "prep_hole_geo": "square",
             "wall_thickness": "2",
             "with_grid": "true"
+        },
+        "design default value,": {
+            "$fn": "48",
+            "bottom_lid": "true",
+            "bottom_lid_style": "fence",
+            "box_size": "99",
+            "diagonal_cut": "true",
+            "error_on_not_interconnectable": "false",
+            "fence_frame_thickness": "2",
+            "fence_height": "20",
+            "fence_n": "3",
+            "fence_thickness": "2",
+            "film_thickness": "0.5",
+            "frame": "false",
+            "frame_height": "70",
+            "frame_thickness": "2",
+            "grid_h": "0.5",
+            "grid_n": "4",
+            "hole_offset": "12.5",
+            "prep_hole_d": "8",
+            "prep_hole_geo": "square",
+            "sides": "false",
+            "top_lid": "false",
+            "top_lid_style": "flat",
+            "wall_thickness": "2",
+            "with_grid": "true"
         }
     },
     "fileFormatVersion": "1"

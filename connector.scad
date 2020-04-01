@@ -56,21 +56,25 @@ module hinge () {
     }
 }
 
-module connector (with_hinge=false) {
+module connector (with_hinge=false, length=length, width=width, height=height, top_head=true, bottom_head=true) {
     middle_length = length - width;
     difference() {
         union() {
             cube([middle_length, width, height]);
 
             end_radius = width/2;
-            translate([0, end_radius])
-            cylinder(r=end_radius, h=height);
+            if (bottom_head) {
+                translate([0, end_radius])
+                cylinder(r=end_radius, h=height);
+            }
 
-            translate([middle_length, end_radius])
-            cylinder(r=end_radius, h=height);
+            if (top_head) {
+                translate([middle_length, end_radius])
+                cylinder(r=end_radius, h=height);
+            }
         }
-        translate([0, width/2]) screw_hole();
-        translate([middle_length, width/2]) screw_hole();
+        if (bottom_head) translate([0, width/2]) screw_hole();
+        if (top_head) translate([middle_length, width/2]) screw_hole();
         if (with_hinge) {
             translate([middle_length/2, width/2, height/2])
             cube([5-0.1, width+0.1, height+0.1], center=true);
