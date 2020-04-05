@@ -29,6 +29,7 @@ frame_thickness = 2;
 /* [Screws] */
 hole_offset=12.5;
 prep_hole_d=8;
+screw_hole_d=5.45;
 
 /* [Modularity] */
 diagonal_cut=true;
@@ -199,7 +200,7 @@ module screwHole() {
         hole_depth=wall_thickness+1;
         translate([0, hole_depth/2+wall_thickness/2,0])
         rotate([90,0,0])
-        cylinder(r=5.45/2, h=hole_depth);
+        cylinder(r=screw_hole_d/2, h=hole_depth);
 }
 
 module box(with_grid=false, diagonal_cut=false, with_fence=false) {
