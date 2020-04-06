@@ -1,9 +1,16 @@
-box_size=99; // [10:0.5:250]
+box_size=99; // [10:0.25:250]
 wall_thickness=2;
 with_grid=true; // [true, false]
 
+/* [Advanced Sizing] */
+// will not edit model unless cube shaped is disabled
+cube_shaped=true;
+box_height=99; // [10:0.25:250]
+box_width=99; // [10:0.25:250]
+
 /* [Parts] */
 sides=true;
+Holes_for_screws=true;
 bottom_lid=false;
 bottom_lid_style="flat"; // [flat, grid, circle, fence]
 top_lid=false;
@@ -58,7 +65,10 @@ module cut_line(diag_cut_len) {
 }
 
 module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false){
-    max_pt = box_size-hole_offset;
+    b_height=cube_shaped ? box_size : box_height;
+    b_width=cube_shaped ? box_size : box_width;
+    max_pt_h = b_height-hole_offset;
+    max_pt_w = b_width-hole_offset;
     min_pt = hole_offset;
     center_pt = box_size / 2;
     circle_r = (box_size*0.91)/2;
@@ -66,12 +76,17 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=f
     union() {
     difference() {
     difference() {
-        cube([box_size, wall_thickness, box_size]);
+        if (cube_shaped) {
+            cube([box_size, wall_thickness, box_size]);
+        } else {
+            cube([box_width, wall_thickness, box_height]);
+        }
+        if (Holes_for_screws) 
         union() {
-            translate([min_pt, 0, max_pt]) screwHole();
-            translate([max_pt, 0, min_pt]) screwHole();
+            translate([min_pt, 0, max_pt_h]) screwHole();
+            translate([max_pt_w, 0, min_pt]) screwHole();
             translate([min_pt, 0, min_pt]) screwHole();
-            translate([max_pt, 0, max_pt]) screwHole();
+            translate([max_pt_w, 0, max_pt_h]) screwHole();
         }
     }
     if (with_circle) {
@@ -171,9 +186,9 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=f
             translate([0, wall_thickness]) {
                 diag_cut_len=box_size+0.01;
                 cut_line(diag_cut_len);
-                translate([0,0,box_size]) cut_line(diag_cut_len);
+                translate([0,0,b_height]) cut_line(diag_cut_len);
                 rotate([0,-90]) cut_line(diag_cut_len);
-                translate([box_size,0]) rotate([0,-90]) cut_line(diag_cut_len);
+                translate([b_width,0]) rotate([0,-90]) cut_line(diag_cut_len);
             }
         }
     }
