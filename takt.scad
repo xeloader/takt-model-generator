@@ -1,6 +1,5 @@
 box_size=99; // [10:0.25:250]
 wall_thickness=2;
-with_grid=true; // [true, false]
 
 /* [Advanced Sizing] */
 // will not edit model unless cube shaped is disabled
@@ -10,11 +9,12 @@ box_width=99; // [10:0.25:250]
 
 /* [Parts] */
 sides=true;
+with_grid=true; // [true, false]
 Holes_for_screws=true;
 bottom_lid=false;
-bottom_lid_style="flat"; // [flat, grid, circle, fence]
+bottom_lid_style="flat"; // [flat, grid, circle, fence, boards]
 top_lid=false;
-top_lid_style="flat"; // [flat, grid, circle, fence]
+top_lid_style="flat"; // [flat, grid, circle, fence, boards]
 
 /* [Type-Grid] */
 grid_n=4;
@@ -34,7 +34,8 @@ frame_height = 70;
 frame_thickness = 2;
 
 /* [Screws] */
-hole_offset=12.5;
+// 12.5 before
+hole_offset=12.0;
 prep_hole_d=8;
 screw_hole_d=5.45;
 
@@ -47,7 +48,13 @@ error_on_not_interconnectable=false; // [true, false]
 $fn = 48;
 
 if (error_on_not_interconnectable) {
+    if (cube_shaped) {
 assert(box_size/2 > 2*hole_offset, "Settings yields non interconnectable boxes"); 
+    } else {
+       connector_length = hole_offset * 2;
+       assert(box_height/2 > connector_length);
+       assert(box_width/2 > connector_length);
+    }
 }
 
 module rotate_about_pt(z, y, pt) {
@@ -64,7 +71,7 @@ module cut_line(diag_cut_len) {
     cube([diag_cut_len, cut_size, cut_size], center=true);
 }
 
-module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false){
+module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false, with_board=false){
     b_height=cube_shaped ? box_size : box_height;
     b_width=cube_shaped ? box_size : box_width;
     max_pt_h = b_height-hole_offset;
@@ -89,10 +96,13 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=f
             translate([max_pt_w, 0, max_pt_h]) screwHole();
         }
     }
-    if (with_circle) {
+    if (with_circle || with_board) {
+        cyl_height = with_circle 
+            ?  wall_thickness-film_thickness
+            : wall_thickness+1;
         rotate([90, 0])
         translate([center_pt, center_pt, -wall_thickness-0.01])
-        cylinder(r=circle_r, h=wall_thickness-film_thickness);
+        cylinder(r=circle_r, h=cyl_height);
     }
     if (with_fence) {
         fence_size = box_size-2*2*hole_offset;
@@ -129,6 +139,19 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=f
     }
     }
 }
+    if (with_board) {
+        max_i = fence_n - 1;
+        fence_size = box_size-fence_thickness;
+        offset = fence_thickness/2;
+        step_size = fence_size / (fence_n - 1);
+        translate([offset, -fence_height/2+fence_thickness, box_size/2]) 
+        rotate([0, 90]) {
+            for (i=[0:max_i]) {
+                translate([0,0,step_size*i])
+                cube([box_size, fence_height, fence_thickness], center=true);
+            }
+        }
+    }
     if (with_fence) {
         max_i = fence_n - 1;
         fence_size = box_size-2*2*hole_offset;
@@ -239,6 +262,7 @@ center_pt=box_size/2;
         rotate([90])
         side(
             with_grid=bottom_lid_style == "grid", 
+            with_board=bottom_lid_style == "boards", 
             with_circle=bottom_lid_style=="circle",
             with_fence=bottom_lid_style=="fence",
             diagonal_cut=diagonal_cut
@@ -249,6 +273,7 @@ center_pt=box_size/2;
         rotate([-90])
         side(
             with_grid=top_lid_style == "grid", 
+            with_board=top_lid_style == "boards", 
             with_circle=top_lid_style=="circle",
             with_fence=bottom_lid_style=="fence",
             diagonal_cut=diagonal_cut

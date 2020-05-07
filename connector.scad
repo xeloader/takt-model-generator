@@ -1,4 +1,4 @@
-// 35 normal, 41 hinge
+// 35 normal, 41 hinge. (middle length)
 length = 41;
 height = 4;
 width = 10;

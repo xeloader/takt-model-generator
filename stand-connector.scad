@@ -52,6 +52,7 @@ difference() {
 
 // inner circle
 z_pos = bottom ? inner_head_height/2+head_thickness/2 : inner_head_height/2;
+if (head)
 translate([0,0,z_pos])
 difference() {
     difference() {
