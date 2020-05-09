@@ -1,5 +1,5 @@
-// 35 normal, 41 hinge. (middle length)
-length = 41;
+// 35 normal, 41 hinge. (middle length), 39 hinge (new screw offset).
+length = 39;
 height = 4;
 width = 10;
 
@@ -8,6 +8,8 @@ screw_hole_floor_h = 1;
 screw_hole_d = 5.45;
 
 hinge = true;
+hinge_spacing = 0.0; // was 0.1
+hinge_width_fac = 0.29;
 
 $fn = 48;
 
@@ -24,7 +26,7 @@ module hinge () {
     radius=height/2;
     block_width=2.50;
     union() {
-        hinge_width=width*0.3;
+        hinge_width=width*hinge_width_fac;
         translate([0, hinge_width/2]) {
             translate([-block_width/2, 0])
             rotate([0,0,90])
@@ -78,7 +80,7 @@ module connector (with_hinge=false, length=length, width=width, height=height, t
         if (top_head) translate([middle_length, width/2]) screw_hole();
         if (with_hinge) {
             translate([middle_length/2, width/2, height/2])
-            cube([5-0.1, width+0.1, height+0.1], center=true);
+            cube([5-hinge_spacing, width+0.1, height+0.1], center=true);
         }
     }
     if (with_hinge) {
