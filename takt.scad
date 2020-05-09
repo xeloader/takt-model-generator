@@ -9,7 +9,7 @@ box_width=99; // [10:0.25:250]
 
 /* [Parts] */
 sides=true;
-with_grid=true; // [true, false]
+with_grid=false; // [true, false]
 Holes_for_screws=true;
 bottom_lid=false;
 bottom_lid_style="flat"; // [flat, grid, circle, fence, boards]
@@ -32,6 +32,12 @@ film_thickness = 0.5; // [-1:0.5:100]
 frame = false;
 frame_height = 70;
 frame_thickness = 2;
+
+/* [Type-Tunnel] */
+tunnel_bottom = false;
+tunnel_top = false;
+tunnel_r=5; // [5:cable-size, 30:rpi-size]
+tunnel_type="gate"; // [gate, circle]
 
 /* [Screws] */
 // 12.5 before
@@ -71,7 +77,22 @@ module cut_line(diag_cut_len) {
     cube([diag_cut_len, cut_size, cut_size], center=true);
 }
 
-module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false, with_board=false){
+module tunnelHole(r=tunnel_r, type=tunnel_type) {
+    tunnel_offset=r*2;
+    if (tunnel_type=="gate")
+    union() {
+        translate([0,0,r])
+        rotate([0, 90,90])
+        cylinder(r=r, h=100);
+        translate([-tunnel_offset/2,0,-tunnel_offset/2])
+        cube(tunnel_offset);
+    } else if(tunnel_type=="circle") {
+        rotate([0, 90,90])
+        cylinder(r=r, h=100);
+    }
+}
+
+module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=false, with_board=false, with_tunnel=false, with_tunnel_top=false){
     b_height=cube_shaped ? box_size : box_height;
     b_width=cube_shaped ? box_size : box_width;
     max_pt_h = b_height-hole_offset;
@@ -118,6 +139,16 @@ module side(with_grid=false, diagonal_cut=false, with_circle=false, with_fence=f
             }
                
         }
+    }
+    
+    if (with_tunnel) {
+        translate([b_width/2, -0.1])
+        tunnelHole();
+    }
+    if (with_tunnel_top) {
+        translate([b_width/2, -0.1, b_height])
+        rotate([0,180])
+        tunnelHole();
     }
     if (with_grid) {
         grid_size = box_size-2*hole_offset;
@@ -241,13 +272,13 @@ module screwHole() {
         cylinder(r=screw_hole_d/2, h=hole_depth);
 }
 
-module box(with_grid=false, diagonal_cut=false, with_fence=false) {
+module box(with_grid=false, diagonal_cut=false, with_fence=false, with_tunnel_top=false, with_tunnel=false) {
 center_pt=box_size/2;
     if (sides) {
         translate([0, box_size]) 
         rotate_about_pt(180,0,[center_pt,0,center_pt])
-        side(with_grid=with_grid, diagonal_cut=diagonal_cut);
-        side(with_grid=with_grid, diagonal_cut=diagonal_cut);
+        side(with_grid=with_grid, diagonal_cut=diagonal_cut, with_tunnel=with_tunnel, with_tunnel_top=with_tunnel_top);
+        side(with_grid=with_grid, diagonal_cut=diagonal_cut, with_tunnel=with_tunnel, with_tunnel_top=with_tunnel_top);
 
         rotate([0,0,90])
         rotate_about_pt(180,0,[center_pt,0,center_pt])
@@ -265,6 +296,8 @@ center_pt=box_size/2;
             with_board=bottom_lid_style == "boards", 
             with_circle=bottom_lid_style=="circle",
             with_fence=bottom_lid_style=="fence",
+            with_tunnel=with_tunnel, 
+            with_tunnel_top=with_tunnel_top,
             diagonal_cut=diagonal_cut
         );
     }
@@ -281,4 +314,4 @@ center_pt=box_size/2;
     }
 }
 //side(with_fence=true);
-box(with_grid=with_grid, diagonal_cut=diagonal_cut);
+box(with_grid=with_grid, diagonal_cut=diagonal_cut, with_tunnel=tunnel_bottom, with_tunnel_top=tunnel_top);
