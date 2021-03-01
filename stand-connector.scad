@@ -5,7 +5,7 @@ head_thickness=2;
 head_height=23;
 
 arms=true;
-total_d_len=115;
+total_d_len=116.5;
 n_arms = 4;
 arm_width = 10;
 arm_height = 4;
@@ -25,6 +25,11 @@ magnet_height=2;
 magnet_fitting=false;
 magnet_opening_width=7;
 magnet_angle_offset=10;
+
+mid_arm=false;
+mid_arm_length=20;
+mid_arm_width=12;
+
 
 difference() {
     union() {
@@ -48,6 +53,12 @@ difference() {
     if (head)
     translate([0,0,z_pos])
     cylinder(h=height, r=head_d/2, center=true);
+}
+
+if (mid_arm) {
+    rotate([-45, -90])
+    translate([arm_height-0.01,-arm_width/2,-mid_arm_width/2])
+    connector(length=mid_arm_length, width=arm_width, height=mid_arm_width, bottom_head=false, sink=false);
 }
 
 // inner circle

@@ -11,15 +11,17 @@ hinge = true;
 hinge_spacing = 0.0; // was 0.1
 hinge_width_fac = 0.29;
 
+sink=true;
+
 $fn = 48;
 
-module screw_hole () {
+module screw_hole (sink=true, height=height) {
     pre_hole_h = height-screw_hole_floor_h;
-    translate([0,0,screw_hole_floor_h])
+    if (sink) translate([0,0,screw_hole_floor_h])
     cylinder(r=screw_pre_hole_d/2, h=pre_hole_h+0.01);
     
-    translate([0,0,-0.01])
-    cylinder(r=screw_hole_d/2, h=height);
+    translate([0,0,-height/2])
+    cylinder(r=screw_hole_d/2, h=height*2+0.02);
 }
 
 module hinge () {
@@ -59,7 +61,7 @@ module hinge () {
     }
 }
 
-module connector (with_hinge=false, length=length, width=width, height=height, top_head=true, bottom_head=true) {
+module connector (with_hinge=false, length=length, width=width, height=height, top_head=true, bottom_head=true, sink=true) {
     middle_length = length - width;
     difference() {
         union() {
@@ -76,8 +78,8 @@ module connector (with_hinge=false, length=length, width=width, height=height, t
                 cylinder(r=end_radius, h=height);
             }
         }
-        if (bottom_head) translate([0, width/2]) screw_hole();
-        if (top_head) translate([middle_length, width/2]) screw_hole();
+        if (bottom_head) translate([0, width/2]) screw_hole(sink=sink, height=height);
+        if (top_head) translate([middle_length, width/2]) screw_hole(sink=sink, height=height);
         if (with_hinge) {
             translate([middle_length/2, width/2, height/2])
             cube([5-hinge_spacing, width+0.1, height+0.1], center=true);
@@ -89,4 +91,4 @@ module connector (with_hinge=false, length=length, width=width, height=height, t
     }
 }
 
-connector(with_hinge=hinge);
+connector(with_hinge=hinge, sink=sink);
